@@ -1,12 +1,27 @@
+---
 # SPDX-FileCopyrightText: © 2018 Stefano Zacchiroli <zack@upsilon.cc>
 # SPDX-FileCopyrightText: © 2018 Martin Michlmayr <tbm@cyrius.com>
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+name: CI
+
 on:
-  - push
-  - pull_request
+  pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# Needed for nx-set-shas within nx-cloud-main.yml, when run on the master branch
+permissions:
+  actions: read
+  contents: read
+
+
 jobs:
-  test:
+
+  Test:
     name: Unit Tests
     strategy:
       fail-fast: false
@@ -20,38 +35,74 @@ jobs:
           - "git+https://github.com/beancount/beancount/@v2"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
       - if: matrix.os == 'ubuntu-latest'
         run: sudo apt install hledger ledger
+
       - if: matrix.os == 'macos-latest'
         run: brew install coreutils hledger ledger
+
       - if: matrix.os == 'windows-latest'
         run: choco install strawberryperl
+
       - uses: perl-actions/install-with-cpanm@v1.1
         with:
           cpanfile: "cpanfile"
+
       - run: pip install ${{ matrix.beancount }}
+
       - if: matrix.os != 'windows-latest'
         run: make test
+
       - if: matrix.os == 'windows-latest'
         run: make test
         env:
           PERL5BIN: C:\\strawberry\\perl\\bin\\perl
-  docs:
-    name: Documentation
+
+  TestDocker:
+    name: Docker Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-      - run: pip install -r requirements.txt
-      - run: mkdocs build
-      - run: find -name "*.yml" -exec yamllint -s {} \;
-      - run: find -name "*.yaml" -exec yamllint -s {} \;
-      - run: sudo apt-get install aspell aspell-en
-      - run: pip install "pyspelling>=2.7"
-      - run: pyspelling
-      - run: pip install codespell
-      - run: find \( -name "*.md" -or -name "*.scd" \) -exec codespell {} \;
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - id: meta
+        run: |
+          echo "test_tag=test_${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: ${{ steps.meta.outputs.test_tag }}
+
+      - name: Test
+        run: |
+          docker run --rm ${{ steps.meta.outputs.test_tag }}
+
+      - name: Cleanup
+        run: |
+          docker rmi ${{ steps.meta.outputs.test_tag }}
+
+  LintDocumentation:
+      runs-on: ubuntu-latest
+
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-python@v4
+        - run: pip install -r requirements.txt
+        - run: mkdocs build
+        - run: find -name "*.yml" -exec yamllint -s {} \;
+        - run: find -name "*.yaml" -exec yamllint -s {} \;
+        - run: sudo apt-get install aspell aspell-en
+        - run: pip install "pyspelling>=2.7"
+        - run: pyspelling
+        - run: pip install codespell
+        - run: find \( -name "*.md" -or -name "*.scd" \) -exec codespell {} \;
