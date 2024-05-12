@@ -26,12 +26,12 @@ RUN apt-get install --yes \
 #   so as to prevent LF errors due to Windows
 #   For Linux: COPY . /usr/ledger2beancount
 FROM step1 as step2-b
-RUN git clone https://github.com/beancount/ledger2beancount.git /usr/ledger2beancount
+RUN git clone https://github.com/beancount/ledger2beancount.git /opt/ledger2beancount
 
 #--------------------------
 # Merge step2-a and step2-b
 FROM step2-a as final
-COPY --from=step2-b /usr/ledger2beancount /opt/ledger2beancount
+COPY --from=step2-b /opt/ledger2beancount /opt/ledger2beancount
 
 #-------------------------
 # Install app dependencies
@@ -50,4 +50,4 @@ RUN update-locale "LANG=en_US.UTF-8"
 #-------------------------------------
 # Set default script and arguments
 #   This can be overridden at runtime
-ENTRYPOINT [ "/usr/bin/ledger2beancount" ]
+ENTRYPOINT [ "/opt/ledger2beancount" ]
