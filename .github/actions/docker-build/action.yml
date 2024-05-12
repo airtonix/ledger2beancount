@@ -109,5 +109,6 @@ runs:
 
     - name: Cleanup
       shell: bash
+      if: ${{ inputs.test == 'true' }}
       run: |
-        docker rmi ${{ steps.docker.outputs.tag }}
+        docker rmi ${{ inputs.repository_name }}_test
