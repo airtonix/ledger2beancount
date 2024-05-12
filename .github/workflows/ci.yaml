@@ -77,6 +77,7 @@ jobs:
         with:
           repository_owner: ${{ github.repository_owner }}
           repository_name: ${{ github.event.repository.name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           test: true
 
   LintDocumentation:
