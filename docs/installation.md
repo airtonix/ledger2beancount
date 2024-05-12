@@ -54,13 +54,19 @@ that's part of ledger2beancount's Git repository:
 ```shell
 git clone https://github.com/beancount/ledger2beancount/
 cd ledger2beancount
-DOCKER_BUILDKIT=1 docker image build -t <IMAGENAME> .
+export $IMAGE_NAME=ledger2beancount
+DOCKER_BUILDKIT=1 docker image build -t $IMAGE_NAME .
 ```
+
+> [!WARNING]
+> Building the Docker image is only supported within Linux environments.
+> For windows users, this means you should be using Windows Subsystem for Linux or a Linux Virtual Machine.
+> For macOS users, this means you should be using a Linux Virtual Machine.
 
 Now you can run ledger2beancount like this:
 
 ```shell
-docker run --rm -v <HOSTDIR>:/usr/ledger2beancount/docker:rw <IMAGENAME> docker/<LEDGER FILE>
+docker run --rm --it -v "$(pwd):/data:rw" $IMAGE_NAME -c /data/test/accounts.yaml /data/test/accounts.ledger
 ```
 
 ## macOS
