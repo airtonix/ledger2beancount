@@ -17,6 +17,7 @@ concurrency:
 permissions:
   actions: read
   contents: read
+  packages: write
 
 
 jobs:
@@ -74,6 +75,8 @@ jobs:
 
       - uses: ./.github/actions/docker-build
         id: docker
+        env:
+          BUILDKIT_NO_CLIENT_TOKEN: true
         with:
           repository_owner: ${{ github.repository_owner }}
           repository_name: ${{ github.event.repository.name }}

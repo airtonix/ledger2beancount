@@ -59,9 +59,9 @@ DOCKER_BUILDKIT=1 docker image build -t $IMAGE_NAME .
 ```
 
 > [!WARNING]
-> Building the Docker image is only supported within linux environments.
-> For windows users, this means you should be using WSL2 or a linux VM.
-> For macOS users, this means you should be using a linux VM.
+> Building the Docker image is only supported within Linux environments.
+> For windows users, this means you should be using Windows Subsystem for Linux or a Linux Virtual Machine.
+> For macOS users, this means you should be using a Linux Virtual Machine.
 
 Now you can run ledger2beancount like this:
 
