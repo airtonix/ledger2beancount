@@ -34,6 +34,8 @@ jobs:
         id: release-please
         with:
           token: ${{secrets.RELEASE_PLEASE_TOKEN}}
+          release-type: simple
+
       - name: Print Release Data
         run: |
           echo 'Release Data:'
@@ -51,53 +53,5 @@ jobs:
       steps:
         - uses: actions/checkout@v3
 
-        - name: Set up QEMU
-          uses: docker/setup-qemu-action@v3
+        - uses: ./.github/actions/docker-build
 
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
-
-        - name: Login to GitHub Container Registry
-          uses: docker/login-action@v3
-          with:
-            registry: ghcr.io
-            username: ${{ github.repository_owner }}
-            password: ${{ secrets.GITHUB_TOKEN }}
-
-        - name: Docker meta
-          id: docker_meta
-          uses: docker/metadata-action@v5
-          with:
-            # list of Docker images to use as base name for tags
-            # if you want to push to more registries, then you:
-            #  1. add the fully qualified image name to the list
-            #  2. insert another login action above for the registry
-            images: |
-              ghcr.io/${{github.repository_owner}}/${{github.event.repository.name}}
-
-            # generate Docker tags based on the following events/attributes.
-            # It ends up instructing further actions to tag the image with the git sha, semver, and latest.
-
-            # the following means:
-            #  sha: the image will be tagged with the git sha of the commit
-            #    https://github.com/docker/metadata-action?tab=readme-ov-file#typesha
-            #  pep440: the tag will be the semver version if there is a tag on the commit. there will be a tag for each semver component: 1.2.3, 1.2, 1
-            #    https://github.com/docker/metadata-action?tab=readme-ov-file#typepep440
-            #  raw: the tag will be latest if this is a build on the default branch
-            #    https://github.com/docker/metadata-action?tab=readme-ov-file#typeraw
-            tags: |
-              type=sha,enable=true,priority=100,prefix=gitsha-,suffix=,format=short
-              type=raw,value=latest,enable={{is_default_branch}}
-              type=pep440,pattern={{version}},value=${{ steps.Process.outputs.tag_name }}
-              type=pep440,pattern={{major}}.{{minor}},value=${{ steps.Process.outputs.tag_name }}
-              type=pep440,pattern={{major}},value=${{ steps.Process.outputs.tag_name }}
-
-        - name: Build and push
-          uses: docker/build-push-action@v5
-          with:
-            context: .
-            push: true
-            tags: ${{ steps.docker_meta.outputs.tags }}
-            labels: ${{ steps.docker_meta.outputs.labels }}
-            cache-from: type=registry,ref=user/app:latest
-            cache-to: type=inline

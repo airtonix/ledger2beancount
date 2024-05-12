@@ -31,11 +31,11 @@ RUN git clone https://github.com/beancount/ledger2beancount.git /usr/ledger2bean
 #--------------------------
 # Merge step2-a and step2-b
 FROM step2-a as final
-COPY --from=step2-b /usr/ledger2beancount /usr/ledger2beancount
+COPY --from=step2-b /usr/ledger2beancount /opt/ledger2beancount
 
 #-------------------------
 # Install app dependencies
-WORKDIR /usr/ledger2beancount
+WORKDIR /opt/ledger2beancount
 RUN cpanm --installdeps .
 
 #--------------------------
@@ -50,4 +50,4 @@ RUN update-locale "LANG=en_US.UTF-8"
 #-------------------------------------
 # Set default script and arguments
 #   This can be overridden at runtime
-ENTRYPOINT [ "bin/ledger2beancount" ]
+ENTRYPOINT [ "/usr/bin/ledger2beancount" ]
