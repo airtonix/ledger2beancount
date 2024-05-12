@@ -78,7 +78,12 @@ jobs:
           repository_owner: ${{ github.repository_owner }}
           repository_name: ${{ github.event.repository.name }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          test: true
+          test: |
+            docker run --rm \
+              -v $PWD/tests:/data \
+              -w /data \
+              "$TEST_IMAGE_NAME" \
+              convert -c /data/accounts.yaml ./accounts.ledger
 
   LintDocumentation:
       runs-on: ubuntu-latest

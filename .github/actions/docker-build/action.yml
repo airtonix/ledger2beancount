@@ -3,9 +3,8 @@ description: 'Greet someone'
 
 inputs:
   test:  # id of input
-    description: 'Should we test the image?'
+    description: 'command to run when testing'
     required: false
-    default: 'false'
   token:
     description: 'GitHub token'
     required: true
@@ -85,7 +84,7 @@ runs:
 
     - name: Build and push
       uses: docker/build-push-action@v5
-      if: ${{ inputs.test == 'true' }}
+      if: ${{ inputs.test != '' }}
       with:
         context: .
         load: true
@@ -94,8 +93,9 @@ runs:
     - name: Test
       shell: bash
       if: ${{ inputs.test == 'true' }}
-      run: |
-        docker run --rm ${{ inputs.repository_name }}_test
+      env:
+        TEST_IMAGE_NAME: ${{ inputs.repository_name }}_test
+      run: ${{ inputs.test }}
 
     - name: Build and push
       uses: docker/build-push-action@v5
