@@ -86,12 +86,22 @@ jobs:
       steps:
         - uses: actions/checkout@v4
         - uses: actions/setup-python@v4
+
         - run: pip install -r requirements.txt
+
         - run: mkdocs build
-        - run: find -name "*.yml" -exec yamllint -s {} \;
-        - run: find -name "*.yaml" -exec yamllint -s {} \;
-        - run: sudo apt-get install aspell aspell-en
-        - run: pip install "pyspelling>=2.7"
-        - run: pyspelling
-        - run: pip install codespell
-        - run: find \( -name "*.md" -or -name "*.scd" \) -exec codespell {} \;
+
+        - run: |
+            find \
+              -regextype posix-egrep \
+              -regex ".*\.ya?ml" \
+              -exec yamllint -s {} \;
+
+        - run: |
+            sudo apt-get install aspell aspell-en
+            pip install "pyspelling>=2.7" &&
+              \ pyspelling
+
+        - run: |
+            pip install codespell &&
+              \ find \( -name "*.md" -or -name "*.scd" \) -exec codespell {} \;
