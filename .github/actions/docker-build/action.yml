@@ -19,8 +19,6 @@ inputs:
     description: 'Version of the image'
     required: false
 
-
-
 outputs:
   tags:
     description: "tags"
