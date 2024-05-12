@@ -89,13 +89,13 @@ runs:
       with:
         context: .
         load: true
-        tags: ${{ inputs.repository_name }}_TEST
+        tags: ${{ inputs.repository_name }}_test
 
     - name: Test
       shell: bash
       if: ${{ inputs.test == 'true' }}
       run: |
-        docker run --rm ${{ inputs.repository_name }}_TEST
+        docker run --rm ${{ inputs.repository_name }}_test
 
     - name: Build and push
       uses: docker/build-push-action@v5
